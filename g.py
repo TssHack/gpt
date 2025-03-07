@@ -41,10 +41,11 @@ def send_request(prompt):
                 # بررسی نوع محتوا (در صورتی که JSON باشد، آن را تجزیه می‌کنیم)
                 if 'application/json' in response.headers.get('Content-Type', ''):
                     result = response.json()  # تجزیه پاسخ به فرمت JSON
-                    print(result["text"].encode('utf-8').decode('utf-8'))  # اطمینان از رمزگشایی درست
+                    # اطمینان از رمزگشایی درست پاسخ
+                    print(result["text"].encode('latin1').decode('utf-8'))  
                 else:
                     # اگر پاسخ JSON نباشد، به صورت متن خام چاپ می‌شود
-                    print("پاسخ دریافتی: ", response.text)
+                    print("پاسخ دریافتی: ", response.content.decode('utf-8'))
             except json.JSONDecodeError:
                 print("خطا در تجزیه پاسخ JSON")
                 print(f"پاسخ دریافتی از سرور: {response.text}")  # چاپ پاسخ خام در صورت بروز خطا
