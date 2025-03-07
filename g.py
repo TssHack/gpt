@@ -34,31 +34,33 @@ def send_request(prompt):
 
     try:
         response = requests.post(url, headers=headers, data=json.dumps(data), verify=True)
-        response.raise_for_status()  # بررسی وضعیت پاسخ (اگر 4xx یا 5xx باشد خطا ایجاد می‌کند)
+        response.raise_for_status()  # Check the status code (raises an error for 4xx or 5xx responses)
 
         if response.status_code == 200:
             try:
-                # بررسی نوع محتوا (در صورتی که JSON باشد، آن را تجزیه می‌کنیم)
+                # Check if the content type is JSON and parse it if so
                 if 'application/json' in response.headers.get('Content-Type', ''):
-                    result = response.json()  # تجزیه پاسخ به فرمت JSON
-                    # اطمینان از رمزگشایی درست پاسخ
+                    result = response.json()  # Parse the response as JSON
                     print(result["text"].encode('latin1').decode('utf-8'))  
                 else:
-                    # اگر پاسخ JSON نباشد، به صورت متن خام چاپ می‌شود
-                    print("پاسخ دریافتی: ", response.content.decode('utf-8'))
+                    # If the response is not JSON, print it as raw text
+                    print("Response received: ", response.content.decode('utf-8'))
             except json.JSONDecodeError:
-                print("خطا در تجزیه پاسخ JSON")
-                print(f"پاسخ دریافتی از سرور: {response.text}")  # چاپ پاسخ خام در صورت بروز خطا
+                print("Error decoding JSON response")
+                print(f"Raw response from server: {response.text}")  # Print raw response if JSON parsing fails
         else:
-            print(f"خطا: {response.status_code}")
+            print(f"Error: {response.status_code}")
 
     except requests.exceptions.RequestException as e:
-        print(f"خطا در ارسال درخواست: {e}")
+        print(f"Error sending request: {e}")
 
-# دریافت ورودی از کاربر و درخواست مکرر
+# Continuous loop to receive input from the user and send requests
 while True:
-    prompt = input("لطفا سوال یا درخواست خود را وارد کنید: ")
-    if prompt.lower() == 'خروج':
-        print("خروج از برنامه...")
-        break
-    send_request(prompt)
+    try:
+        prompt = input("Please enter your question or request: ")
+        if prompt.lower() == 'exit':
+            print("Exiting the program...")
+            break
+        send_request(prompt)
+    except UnicodeDecodeError:
+        print("Error reading input. Please use Latin characters.")
