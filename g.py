@@ -22,7 +22,7 @@ def send_request(prompt):
         "user-agent": "Mozilla/5.0 (Windows NT 6.3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36",
         "Content-Type": "application/json"
     }
-    
+
     data = {
         "prompt": prompt,
         "userId": "#/chat/1711529530173",
@@ -38,10 +38,13 @@ def send_request(prompt):
 
         if response.status_code == 200:
             try:
-                response.encoding = 'utf-8'  # اطمینان از استفاده از انکودینگ UTF-8
-                print("پاسخ دریافتی: ", response.text)  # چاپ پاسخ خام
-                result = response.json()  # تجزیه پاسخ به فرمت JSON
-                print(result["text"])  # چاپ متن پاسخ
+                # بررسی نوع محتوا (در صورتی که JSON باشد، آن را تجزیه می‌کنیم)
+                if 'application/json' in response.headers.get('Content-Type', ''):
+                    result = response.json()  # تجزیه پاسخ به فرمت JSON
+                    print(result["text"])  # چاپ متن پاسخ
+                else:
+                    # اگر پاسخ JSON نباشد، به صورت متن خام چاپ می‌شود
+                    print("پاسخ دریافتی: ", response.text)
             except json.JSONDecodeError:
                 print("خطا در تجزیه پاسخ JSON")
                 print(f"پاسخ دریافتی از سرور: {response.text}")  # چاپ پاسخ خام در صورت بروز خطا
@@ -51,6 +54,10 @@ def send_request(prompt):
     except requests.exceptions.RequestException as e:
         print(f"خطا در ارسال درخواست: {e}")
 
-# تست کد
-prompt = "سلام نام من احسان است"
-send_request(prompt)
+# دریافت ورودی از کاربر و درخواست مکرر
+while True:
+    prompt = input("لطفا سوال یا درخواست خود را وارد کنید: ")
+    if prompt.lower() == 'خروج':
+        print("خروج از برنامه...")
+        break
+    send_request(prompt)
